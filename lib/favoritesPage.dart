@@ -55,6 +55,15 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 var repo = likedRepos[index];
                 return GestureDetector(
                   onTap: () async {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      },
+                    );
                     var queryParams = {
                       'repoName': repo['repoName']!,
                       'owner': repo['owner']!,
@@ -67,6 +76,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       headers,
                       queryParams,
                     );
+                    Navigator.pop(context); // 关闭加载弹窗
                     Navigator.push(
                       context,
                       MaterialPageRoute(

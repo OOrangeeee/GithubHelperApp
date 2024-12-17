@@ -111,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController ownerController =
       TextEditingController(); // 仓库拥有者输入框控制器
   final HttpHelper httpHelper = HttpHelper(); // 创建 HttpHelper 实例
-  final String url = '';
+  final String url = 'https://qqbot.api.oorangeeee.com/getRepoInfo';
 
   @override
   Widget build(BuildContext context) {
@@ -174,6 +174,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 const SizedBox(height: 10), // 添加间距
                 ElevatedButton(
                   onPressed: () async {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      },
+                    );
                     // 构造查询参数
                     var queryParams = {
                       'repoName': repoController.text,
@@ -184,6 +193,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     };
                     String response =
                         await httpHelper.httpGet(url, headers, queryParams);
+                    Navigator.pop(context); // 关闭加载弹窗
                     Navigator.push(
                       context,
                       MaterialPageRoute(
