@@ -1,16 +1,44 @@
-# githubhelper
+# GitHub Helper
 
-A new Flutter project.
+一个用于在任何一个平台都能用的app
 
-## Getting Started
+> 毕竟是flutter编写的，当然可以跨端使用。。
 
-This project is a starting point for a Flutter application.
+## 说明
 
-A few resources to get you started if this is your first Flutter project:
+可以随时查看任何一个公共的GitHub仓库的信息
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+因为国内正常很难直连GitHub，所以我写了一个后端，部署在我的服务器，把所有的要发给GitHub API来获取仓库信息的请求都整合到了一个请求中，并且进行了返回响应中数据的整合和清洗，最后拿到的信息如下：
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+* 仓库名称
+* 仓库拥有者
+* 仓库主分支信息
+  * 主分支名称
+  * 主分支提交数
+  * 最后一次提交时间
+  * 主要贡献者（commit最多的人）
+* 所有分支的信息
+  * 分支名称
+  * 最新提交的信息
+  * 最新提交的时间
+
+例如：
+
+[![pALaEr9.png](https://s21.ax1x.com/2024/12/17/pALaEr9.png)](https://imgse.com/i/pALaEr9)
+
+
+***注意直接clone的代码是不能用的，因为为了防止接口被攻击，我并没有上传url到github。毕竟两核两G的小鸡不能承受太多。。。***
+
+## 如何使用
+
+TODO
+
+## 不足
+
+1. 页面不好看
+2. 当提交的commit message太多的时候字体会很小，搜索页面字体会很小
+3. 搜索页面字体大小不一（和问题2本质是一个问题）
+4. 没有炫酷的动效，后续有时间可以学一下怎么加
+5. 还有很多功能可以做，目前只实现了设想的第一个功能
+
+ps：此项目因腾讯客户端菁英班而生，目前本人准备年后实习，时间有限，后续再来优化完善。
