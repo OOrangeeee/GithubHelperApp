@@ -31,6 +31,11 @@ class _FavoritesPageState extends State<FavoritesPage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
     return Scaffold(

@@ -111,7 +111,14 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController ownerController =
       TextEditingController(); // 仓库拥有者输入框控制器
   final HttpHelper httpHelper = HttpHelper(); // 创建 HttpHelper 实例
-  final String url = 'https://qqbot.api.oorangeeee.com/getRepoInfo';
+  final String url = '';
+
+  @override
+  void dispose() {
+    repoController.dispose();
+    ownerController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
