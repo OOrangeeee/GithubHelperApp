@@ -185,7 +185,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       context: context,
                       barrierDismissible: false,
                       builder: (BuildContext context) {
-                        return Center(
+                        return const Center(
                           child: CircularProgressIndicator(),
                         );
                       },
@@ -209,14 +209,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    minimumSize: Size(300, 50), // 设置按钮的最小尺寸
+                    minimumSize: const Size(300, 50), // 设置按钮的最小尺寸
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20), // 设置按钮的圆角半径
                     ),
                     backgroundColor: theme.colorScheme.surface, // 设置按钮的背景颜色
                     foregroundColor: theme.colorScheme.onSurface, // 设置按钮文本的颜色
                   ),
-                  child: Text('搜索'), // 按钮文本
+                  child: const Text('搜索'), // 按钮文本
                 ),
               ],
             ),

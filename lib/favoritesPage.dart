@@ -64,7 +64,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       context: context,
                       barrierDismissible: false,
                       builder: (BuildContext context) {
-                        return Center(
+                        return const Center(
                           child: CircularProgressIndicator(),
                         );
                       },
