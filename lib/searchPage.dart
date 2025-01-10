@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'utils/storageHelper.dart'; // 导入 storageHelper
+import 'utils/cacheHelper.dart';
+import 'utils/httpHelper.dart';
 
 class SearchPage extends StatefulWidget {
   final String jsonString;
+  final String owner;
+  final String repoName;
 
-  const SearchPage({super.key, required this.jsonString});
+  const SearchPage({
+    super.key,
+    required this.jsonString,
+    required this.owner,
+    required this.repoName,
+  });
 
   @override
   _SearchPageState createState() => _SearchPageState();
@@ -17,6 +26,7 @@ class _SearchPageState extends State<SearchPage>
   final StorageHelper storageHelper = StorageHelper();
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+  final HttpHelper httpHelper = HttpHelper();
 
   @override
   void initState() {
@@ -48,6 +58,53 @@ class _SearchPageState extends State<SearchPage>
         isLiked = liked;
       });
     }
+  }
+
+  Future<void> _refreshData(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
+    // 清除缓存
+    await CacheHelper().clearCache(widget.owner, widget.repoName);
+
+    // 重新请求数据
+    var queryParams = {
+      'repoName': widget.repoName,
+      'owner': widget.owner,
+    };
+    var headers = {
+      'Accept': 'application/json',
+    };
+
+    String response = await httpHelper.httpGet(
+      'urlhere',
+      headers,
+      queryParams,
+    );
+
+    // 保存新的缓存
+    await CacheHelper().saveToCache(widget.owner, widget.repoName, response);
+
+    Navigator.pop(context); // 关闭加载对话框
+
+    // 使用新数据刷新页面
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchPage(
+          jsonString: response,
+          owner: widget.owner,
+          repoName: widget.repoName,
+        ),
+      ),
+    );
   }
 
   @override
@@ -135,6 +192,12 @@ class _SearchPageState extends State<SearchPage>
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => _refreshData(context),
+          ),
+        ],
       ),
       body: Stack(
         children: [

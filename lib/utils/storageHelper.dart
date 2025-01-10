@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'directoryHelper.dart';
 
 class StorageHelper {
   // 获取文件路径
   Future<String> _getFilePath() async {
-    final directory = await getApplicationDocumentsDirectory();
-    return '${directory.path}/liked_repos.json';
+    final appDir = await DirectoryHelper.getAppDirectory();
+    return '$appDir/liked_repos.json';
   }
 
   // 保存仓库信息

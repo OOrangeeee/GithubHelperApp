@@ -4,6 +4,7 @@ import 'utils/httpHelper.dart'; // 导入 httpHelper
 import 'searchPage.dart';
 import 'cards.dart';
 import 'main.dart'; // 导入 main.dart 以便返回主页
+import 'utils/cacheHelper.dart';
 
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
@@ -25,9 +26,11 @@ class _FavoritesPageState extends State<FavoritesPage> {
   // 加载收藏的仓库
   void _loadLikedRepos() async {
     List<Map<String, String>> repos = await storageHelper.getLikedRepos();
-    setState(() {
-      likedRepos = repos;
-    });
+    if (mounted) {
+      setState(() {
+        likedRepos = repos;
+      });
+    }
   }
 
   @override
@@ -158,24 +161,43 @@ class _FavoritesPageState extends State<FavoritesPage> {
                                     );
                                   },
                                 );
-                                var queryParams = {
-                                  'repoName': repo['repoName']!,
-                                  'owner': repo['owner']!,
-                                };
-                                var headers = {
-                                  'Accept': 'application/json',
-                                };
-                                String response = await HttpHelper().httpGet(
-                                  'urlhere',
-                                  headers,
-                                  queryParams,
-                                );
+
+                                // 先尝试从缓存获取数据
+                                String? cachedData = await CacheHelper()
+                                    .getFromCache(
+                                        repo['owner']!, repo['repoName']!);
+
+                                String response;
+                                if (cachedData != null) {
+                                  response = cachedData;
+                                } else {
+                                  var queryParams = {
+                                    'repoName': repo['repoName']!,
+                                    'owner': repo['owner']!,
+                                  };
+                                  var headers = {
+                                    'Accept': 'application/json',
+                                  };
+                                  response = await HttpHelper().httpGet(
+                                    'urlhere',
+                                    headers,
+                                    queryParams,
+                                  );
+                                  // 保存到缓存
+                                  await CacheHelper().saveToCache(
+                                      repo['owner']!,
+                                      repo['repoName']!,
+                                      response);
+                                }
+
                                 Navigator.pop(context); // 关闭加载弹窗
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        SearchPage(jsonString: response),
+                                    builder: (context) => SearchPage(
+                                        jsonString: response,
+                                        owner: repo['owner']!,
+                                        repoName: repo['repoName']!),
                                   ),
                                 );
                               },

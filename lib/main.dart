@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:githubhelper/utils/httpHelper.dart';
-import 'package:githubhelper/utils/storageHelper.dart'; // 导入 storageHelper
-import 'cards.dart';
-import 'searchPage.dart'; // 导入 searchPage
-import 'favoritesPage.dart'; // 导入 favoritesPage
-import 'package:path_provider/path_provider.dart';
+import 'package:githubhelper/utils/storageHelper.dart';
+import 'searchPage.dart';
+import 'favoritesPage.dart';
+import 'utils/cacheHelper.dart';
+import 'dart:io';
+import 'utils/directoryHelper.dart';
 
-// 打印 liked_repos.json 文件路径
-Future<void> printFilePath() async {
-  final directory = await getApplicationDocumentsDirectory();
-  print('File path: ${directory.path}/liked_repos.json');
-}
+// Future<void> printFilePath() async {
+//   final directory = await getApplicationDocumentsDirectory();
+//   print('Application documents directory: ${directory.path}');
+// }
 
 void main() {
   runApp(const MyApp());
-  printFilePath();
-  StorageHelper().printLikedRepos(); // 输出 liked_repos.json 文件内容
+  // printFilePath();
+  StorageHelper().printLikedRepos();
 }
 
 class MyApp extends StatelessWidget {
@@ -120,6 +120,63 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
+  // 添加这个方法来获取并显示文件信息
+  Future<void> _showFileLocations() async {
+    final appDir = await DirectoryHelper.getAppDirectory();
+    final dir = Directory(appDir);
+    List<FileSystemEntity> files = dir.listSync();
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: const [
+              Icon(Icons.folder_open),
+              SizedBox(width: 8),
+              Text('文件位置信息'),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('应用数据目录:\n$appDir',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                const Divider(),
+                const Text('文件列表:',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                ...files.map((file) {
+                  String fileName =
+                      file.path.split(Platform.pathSeparator).last;
+                  String fileType = fileName.startsWith('cache_')
+                      ? '(缓存文件)'
+                      : fileName == 'liked_repos.json'
+                          ? '(收藏文件)'
+                          : '';
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text('• $fileName $fileType'),
+                  );
+                }).toList(),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('关闭'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
@@ -129,6 +186,14 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(widget.title),
+        actions: [
+          // 添加这个按钮
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: _showFileLocations,
+            tooltip: '查看文件位置',
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -236,22 +301,44 @@ class _MyHomePageState extends State<MyHomePage> {
                                     );
                                   },
                                 );
-                                // 构造查询参数
-                                var queryParams = {
-                                  'repoName': repoController.text,
-                                  'owner': ownerController.text,
-                                };
-                                var headers = {
-                                  'Accept': 'application/json',
-                                };
-                                String response = await httpHelper.httpGet(
-                                    url, headers, queryParams);
+
+                                final owner = ownerController.text;
+                                final repoName = repoController.text;
+
+                                // 先尝试从缓存获取数据
+                                String? cachedData = await CacheHelper()
+                                    .getFromCache(owner, repoName);
+
+                                String response;
+                                if (cachedData != null) {
+                                  response = cachedData;
+                                } else {
+                                  // 如果没有缓存，则发送请求
+                                  var queryParams = {
+                                    'repoName': repoName,
+                                    'owner': owner,
+                                  };
+                                  var headers = {
+                                    'Accept': 'application/json',
+                                  };
+                                  response = await httpHelper.httpGet(
+                                      url, headers, queryParams);
+
+                                  // 保存到缓存
+                                  await CacheHelper()
+                                      .saveToCache(owner, repoName, response);
+                                }
+
                                 Navigator.pop(context); // 关闭加载弹窗
+
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        SearchPage(jsonString: response),
+                                    builder: (context) => SearchPage(
+                                      jsonString: response,
+                                      owner: owner,
+                                      repoName: repoName,
+                                    ),
                                   ),
                                 );
                               },
