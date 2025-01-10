@@ -39,67 +39,154 @@ class _FavoritesPageState extends State<FavoritesPage> {
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text('收藏仓库'),
       ),
       body: Stack(
         children: [
-          // 背景图片
           Positioned.fill(
             child: Image.asset(
               'lib/images/background.jpg',
               fit: BoxFit.cover,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ListView.builder(
-              itemCount: likedRepos.length,
-              itemBuilder: (context, index) {
-                var repo = likedRepos[index];
-                return GestureDetector(
-                  onTap: () async {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (BuildContext context) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  // 标题卡片
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.cardColor.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.favorite,
+                          color: theme.colorScheme.primary,
+                          size: 30,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          '我的收藏',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // 收藏列表
+                  Expanded(
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: likedRepos.length,
+                      itemBuilder: (context, index) {
+                        var repo = likedRepos[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: theme.cardColor.withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.all(16),
+                              leading: CircleAvatar(
+                                backgroundColor: theme.colorScheme.primary,
+                                child: Text(
+                                  repo['owner']![0].toUpperCase(),
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onPrimary,
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                repo['repoName']!,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              subtitle: Text(
+                                '作者: ${repo['owner']}',
+                                style: TextStyle(
+                                  color: theme.colorScheme.onSurface
+                                      .withOpacity(0.7),
+                                ),
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.favorite,
+                                    color: Colors.red),
+                                onPressed: () async {
+                                  await storageHelper.removeRepoInfo(
+                                      repo['owner']!, repo['repoName']!);
+                                  _loadLikedRepos();
+                                },
+                              ),
+                              onTap: () async {
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (BuildContext context) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  },
+                                );
+                                var queryParams = {
+                                  'repoName': repo['repoName']!,
+                                  'owner': repo['owner']!,
+                                };
+                                var headers = {
+                                  'Accept': 'application/json',
+                                };
+                                String response = await HttpHelper().httpGet(
+                                  'urlhere',
+                                  headers,
+                                  queryParams,
+                                );
+                                Navigator.pop(context); // 关闭加载弹窗
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        SearchPage(jsonString: response),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                         );
                       },
-                    );
-                    var queryParams = {
-                      'repoName': repo['repoName']!,
-                      'owner': repo['owner']!,
-                    };
-                    var headers = {
-                      'Accept': 'application/json',
-                    };
-                    String response = await HttpHelper().httpGet(
-                      'urlhere',
-                      headers,
-                      queryParams,
-                    );
-                    Navigator.pop(context); // 关闭加载弹窗
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SearchPage(jsonString: response),
-                      ),
-                    );
-                  },
-                  child: TextCard(
-                    text: '作者: ${repo['owner']}\n仓库名称: ${repo['repoName']}',
-                    borderRadius: 10.0,
-                    backgroundColor: theme.colorScheme.primary.withOpacity(0.6),
-                    fontColor: theme.colorScheme.onPrimary,
-                    width: double.infinity,
-                    height: 100.0,
-                    fontSizePresent: 0.17,
+                    ),
                   ),
-                );
-              },
+                ],
+              ),
             ),
           ),
         ],

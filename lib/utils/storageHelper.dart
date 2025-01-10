@@ -17,7 +17,7 @@ class StorageHelper {
   }
 
   // 移除仓库信息
-  void removeRepoInfo(String owner, String repoName) async {
+  Future<void> removeRepoInfo(String owner, String repoName) async {
     List<Map<String, String>> likedRepos = await _readLikedRepos();
     likedRepos.removeWhere(
         (repo) => repo['owner'] == owner && repo['repoName'] == repoName);
