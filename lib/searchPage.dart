@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'cards.dart';
 import 'utils/storageHelper.dart'; // 导入 storageHelper
 
 class SearchPage extends StatefulWidget {

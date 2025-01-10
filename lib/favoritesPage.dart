@@ -77,7 +77,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       'Accept': 'application/json',
                     };
                     String response = await HttpHelper().httpGet(
-                      'https://qqbot.api.oorangeeee.com/getRepoInfo',
+                      'urlhere',
                       headers,
                       queryParams,
                     );
