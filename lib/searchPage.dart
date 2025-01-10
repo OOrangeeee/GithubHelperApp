@@ -94,116 +94,113 @@ class _SearchPageState extends State<SearchPage> {
       ),
       body: Stack(
         children: [
-          // 背景图片
-          Positioned.fill(
-            child: Image.asset(
-              'lib/images/background.jpg',
-              fit: BoxFit.cover,
+          // 背景图片作为第一个子元素
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('lib/images/background.jpg'),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight:
-                      MediaQuery.of(context).size.height - kToolbarHeight,
-                ),
-                child: IntrinsicHeight(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 整个页面用一个 Card 呈现
-                      Card(
-                        color: theme.colorScheme.primary.withOpacity(0.1),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // 仓库名称和拥有者用一个 Card 嵌套
-                              TextCard(
+          // 内容区域
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Card(
+                    color: theme.colorScheme.primary.withOpacity(0.1),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextCard(
+                            text:
+                                '仓库名称: ${repoInfo['RepoName']}\n拥有者: ${repoInfo['Owner']}',
+                            borderRadius: 10.0,
+                            backgroundColor:
+                                theme.colorScheme.primary.withOpacity(0.6),
+                            fontColor: theme.colorScheme.onPrimary,
+                            width: double.infinity,
+                            height: 100.0,
+                            fontSizePresent: 0.25,
+                          ),
+                          const SizedBox(height: 10),
+                          TextCard(
+                            text:
+                                '主分支: $mainBranchName\n主分支提交数: ${repoInfo['MainBranch']['MainBranchCommitNum']}\n主分支最新提交时间: ${repoInfo['MainBranch']['MainBranchLatestCommitTime']}\n主要贡献者: ${repoInfo['MainBranch']['MainContributor']}',
+                            borderRadius: 10.0,
+                            backgroundColor:
+                                theme.colorScheme.secondary.withOpacity(0.6),
+                            fontColor: theme.colorScheme.onSecondary,
+                            width: double.infinity,
+                            height: 150.0,
+                            fontSizePresent: 0.25,
+                          ),
+                          const SizedBox(height: 10),
+                          Text('分支列表:',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              )),
+                          const SizedBox(height: 10),
+                          ...repoInfo['Branches'].map<Widget>((branch) {
+                            String commitMsg = branch['LatestCommitMsg'];
+                            if (commitMsg.length > 50) {
+                              commitMsg = '${commitMsg.substring(0, 47)}...';
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10.0),
+                              child: TextCard(
                                 text:
-                                    '仓库名称: ${repoInfo['RepoName']}\n拥有者: ${repoInfo['Owner']}',
+                                    '分支名称: ${branch['BranchName']}\n最新提交信息: $commitMsg\n最新提交时间: ${branch['LatestCommitTime']}',
                                 borderRadius: 10.0,
                                 backgroundColor:
-                                    theme.colorScheme.primary.withOpacity(0.6),
-                                fontColor: theme.colorScheme.onPrimary,
+                                    theme.colorScheme.tertiary.withOpacity(0.6),
+                                fontColor: theme.colorScheme.onTertiary,
                                 width: double.infinity,
-                                height: 100.0,
-                                fontSizePresent: 0.17,
+                                height: 120.0,
+                                fontSizePresent: 0.25,
                               ),
-                              const SizedBox(height: 10),
-                              // 主分支信息用一个 Card 嵌套
-                              TextCard(
-                                text:
-                                    '主分支: $mainBranchName\n主分支提交数: ${repoInfo['MainBranch']['MainBranchCommitNum']}\n主分支最新提交时间: ${repoInfo['MainBranch']['MainBranchLatestCommitTime']}\n主要贡献者: ${repoInfo['MainBranch']['MainContributor']}',
-                                borderRadius: 10.0,
-                                backgroundColor: theme.colorScheme.secondary
-                                    .withOpacity(0.6),
-                                fontColor: theme.colorScheme.onSecondary,
-                                width: double.infinity,
-                                height: 150.0,
-                                fontSizePresent: 0.17,
+                            );
+                          }).toList(),
+                          const SizedBox(height: 10),
+                          Center(
+                            child: IconButton(
+                              iconSize: 40.0,
+                              icon: Icon(
+                                isLiked
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: isLiked ? Colors.red : Colors.grey,
                               ),
-                              const SizedBox(height: 10),
-                              const Text('分支列表:',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 10),
-                              // 分支信息用各自的 Card 嵌套
-                              ...repoInfo['Branches'].map<Widget>((branch) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 10.0),
-                                  child: TextCard(
-                                    text:
-                                        '分支名称: ${branch['BranchName']}\n最新提交信息: ${branch['LatestCommitMsg']}\n最新提交时间: ${branch['LatestCommitTime']}',
-                                    borderRadius: 10.0,
-                                    backgroundColor: theme.colorScheme.tertiary
-                                        .withOpacity(0.6),
-                                    fontColor: theme.colorScheme.onTertiary,
-                                    width: double.infinity,
-                                    height: 120.0,
-                                    fontSizePresent: 0.17,
-                                  ),
-                                );
-                              }).toList(),
-                              const SizedBox(height: 10),
-                              // 点赞按钮
-                              Center(
-                                child: IconButton(
-                                  iconSize: 40.0, // 设置按钮大小
-                                  icon: Icon(
-                                    isLiked
-                                        ? Icons.favorite
-                                        : Icons.favorite_border,
-                                    color: isLiked ? Colors.red : Colors.grey,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      isLiked = !isLiked; // 切换点赞状态
-                                      if (isLiked) {
-                                        storageHelper.saveRepoInfo(
-                                          repoInfo['Owner'],
-                                          repoInfo['RepoName'],
-                                        );
-                                      } else {
-                                        storageHelper.removeRepoInfo(
-                                          repoInfo['Owner'],
-                                          repoInfo['RepoName'],
-                                        );
-                                      }
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
+                              onPressed: () {
+                                setState(() {
+                                  isLiked = !isLiked;
+                                  if (isLiked) {
+                                    storageHelper.saveRepoInfo(
+                                      repoInfo['Owner'],
+                                      repoInfo['RepoName'],
+                                    );
+                                  } else {
+                                    storageHelper.removeRepoInfo(
+                                      repoInfo['Owner'],
+                                      repoInfo['RepoName'],
+                                    );
+                                  }
+                                });
+                              },
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ),
